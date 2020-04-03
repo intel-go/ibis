@@ -172,7 +172,10 @@ class CreateTableFromCsv(CreateTableWithSchema):
         self.csv_file = csv_file
         self.skip_rows = skip_rows
         self.delimiter = delimiter
-        self.header = header
+        if header is not None and not isinstance(header, str):
+            self.header = 'true' if header else 'false'
+        else:
+            self.header = header
 
     @property
     def _prefix(self):

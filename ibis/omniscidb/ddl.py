@@ -148,10 +148,8 @@ class CreateTableWithSchema(CreateTable):
         return dict(max_rows=self.max_rows, fragment_size=self.fragment_size)
 
     @property
-    def _pieces(self):
-        yield format_schema(self.schema)
-
-        with_stmt = ','.join(
+    def _with_stmt(self):
+        return ','.join(
             [
                 '{}={}'.format(
                     i, "'{}'".format(v) if isinstance(v, str) else v
@@ -161,25 +159,39 @@ class CreateTableWithSchema(CreateTable):
             ]
         )
 
+    @property
+    def _pieces(self):
+        yield format_schema(self.schema)
+        with_stmt = self._with_stmt
         if with_stmt:
             yield ' WITH ({})'.format(with_stmt)
 
 class CreateTableFromCsv(CreateTableWithSchema):
-    def __init__(self, table_name, schema, csv_file, database=None, max_rows=None, fragment_size=None):
-        super().__init__(table_name, schema, database, max_rows)
+    def __init__(self, table_name, schema, csv_file, database=None, max_rows=None, fragment_size=None, skip_rows=None, delimiter=None, header=None):
+        super().__init__(table_name, schema, database, max_rows, fragment_size)
         self.csv_file = csv_file
-        self.fragment_size = fragment_size
+        self.skip_rows = skip_rows
+        self.delimiter = delimiter
+        if header is not None and not isinstance(header, str):
+            self.header = 'true' if header else 'false'
+        else:
+            self.header = header
 
     @property
     def _prefix(self):
-        return 'CREATE TEMPORARY TABLE'
+        return 'CREATE DATAFRAME'
 
     @property
     def with_params(self):
-        result = dict(max_rows=self.max_rows, storage_type='CSV:{}'.format(self.csv_file))
-        if self.fragment_size is not None:
-            result['FRAGMENT_SIZE'] = self.fragment_size
-        return result
+        return dict(max_rows=self.max_rows, fragment_size=self.fragment_size, skip_rows=self.skip_rows, delimiter=self.delimiter, header=self.header)
+
+    @property
+    def _pieces(self):
+        yield format_schema(self.schema)
+        yield "FROM 'CSV:{}'".format(self.csv_file)
+        with_stmt = self._with_stmt
+        if with_stmt:
+            yield ' WITH ({})'.format(with_stmt)
 
 class CTAS(CreateTable):
     """Create Table As Select."""

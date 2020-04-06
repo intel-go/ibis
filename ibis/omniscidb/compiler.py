@@ -78,12 +78,38 @@ class OmniSciDBQueryBuilder(compiles.QueryBuilder):
     """OmniSciDB Query Builder class."""
 
     select_builder = OmniSciDBSelectBuilder
-    union_class = compiles.Union
+    union_class = OmniSciDBUnion
 
-#    def _make_union(self):
-#        raise com.UnsupportedOperationError(
-#            "OmniSciDB backend doesn't support Union operation"
-#        )
+class OmniSciDBUnion(compiles.Union):
+    def format_relation(self, idx_expr):
+        idx, expr = idx_expr
+        formatted = super().format_relation(expr)
+        if idx > 0:
+            return '({})'.format(formatted)
+        return formatted
+
+    def compile(self):
+        self._extract_subqueries()
+
+        extracted = self.format_subqueries()
+
+        buf = []
+
+        if extracted:
+            buf.append('WITH {}'.format(extracted))
+
+        # interleave correct keyword for the backend in between the formatted
+        # UNION expressions
+        buf.extend(
+            toolz.interleave(
+                (
+                    map(self.format_relation, enumerate(self.tables)),
+                    map(self.keyword, self.distincts),
+                )
+            )
+        )
+        return '\n'.join(buf)
+
 
 
 class OmniSciDBQueryContext(compiles.QueryContext):

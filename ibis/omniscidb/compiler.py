@@ -78,12 +78,12 @@ class OmniSciDBQueryBuilder(compiles.QueryBuilder):
     """OmniSciDB Query Builder class."""
 
     select_builder = OmniSciDBSelectBuilder
-    union_class = None
+    union_class = compiles.Union
 
-    def _make_union(self):
-        raise com.UnsupportedOperationError(
-            "OmniSciDB backend doesn't support Union operation"
-        )
+#    def _make_union(self):
+#        raise com.UnsupportedOperationError(
+#            "OmniSciDB backend doesn't support Union operation"
+#        )
 
 
 class OmniSciDBQueryContext(compiles.QueryContext):

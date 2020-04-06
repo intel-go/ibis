@@ -77,6 +77,11 @@ class OmniSciDBSelectBuilder(compiles.SelectBuilder):
 
 
 class OmniSciDBUnion(compiles.Union):
+    def __init__(self, tables, expr, context, distincts):
+        if any(distincts):
+            raise NotImplementedError("Only UNION ALL is currently supported")
+        super().__init__(tables, expr, context, distincts)
+
     def format_relation(self, idx_expr):
         idx, expr = idx_expr
         formatted = super().format_relation(expr)

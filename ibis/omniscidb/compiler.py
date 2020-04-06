@@ -1,6 +1,8 @@
 """OmniSciDB Compiler module."""
 from io import StringIO
 
+import toolz
+
 import ibis
 import ibis.common.exceptions as com
 import ibis.expr.operations as ops
@@ -74,12 +76,6 @@ class OmniSciDBSelectBuilder(compiles.SelectBuilder):
         return exprs
 
 
-class OmniSciDBQueryBuilder(compiles.QueryBuilder):
-    """OmniSciDB Query Builder class."""
-
-    select_builder = OmniSciDBSelectBuilder
-    union_class = OmniSciDBUnion
-
 class OmniSciDBUnion(compiles.Union):
     def format_relation(self, idx_expr):
         idx, expr = idx_expr
@@ -110,6 +106,12 @@ class OmniSciDBUnion(compiles.Union):
         )
         return '\n'.join(buf)
 
+
+class OmniSciDBQueryBuilder(compiles.QueryBuilder):
+    """OmniSciDB Query Builder class."""
+
+    select_builder = OmniSciDBSelectBuilder
+    union_class = OmniSciDBUnion
 
 
 class OmniSciDBQueryContext(compiles.QueryContext):

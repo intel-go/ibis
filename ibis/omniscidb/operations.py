@@ -1080,7 +1080,7 @@ _unsupported_ops = [
     ops.DayOfWeekIndex,
     ops.DayOfWeekName,
     # table
-    ops.Union,
+    #ops.Union,
 ]
 
 _unsupported_ops = {k: raise_unsupported_op_error for k in _unsupported_ops}

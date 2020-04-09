@@ -1,6 +1,8 @@
 """OmniSciDB Compiler module."""
 from io import StringIO
 
+import toolz
+
 import ibis
 import ibis.common.exceptions as com
 import ibis.expr.operations as ops
@@ -74,16 +76,47 @@ class OmniSciDBSelectBuilder(compiles.SelectBuilder):
         return exprs
 
 
+class OmniSciDBUnion(compiles.Union):
+    def __init__(self, tables, expr, context, distincts):
+        if any(distincts):
+            raise NotImplementedError("Only UNION ALL is currently supported")
+        super().__init__(tables, expr, context, distincts)
+
+    def format_relation(self, idx_expr):
+        idx, expr = idx_expr
+        formatted = super().format_relation(expr)
+        if idx > 0:
+            return '({})'.format(formatted)
+        return formatted
+
+    def compile(self):
+        self._extract_subqueries()
+
+        extracted = self.format_subqueries()
+
+        buf = []
+
+        if extracted:
+            buf.append('WITH {}'.format(extracted))
+
+        # interleave correct keyword for the backend in between the formatted
+        # UNION expressions
+        buf.extend(
+            toolz.interleave(
+                (
+                    map(self.format_relation, enumerate(self.tables)),
+                    map(self.keyword, self.distincts),
+                )
+            )
+        )
+        return '\n'.join(buf)
+
+
 class OmniSciDBQueryBuilder(compiles.QueryBuilder):
     """OmniSciDB Query Builder class."""
 
     select_builder = OmniSciDBSelectBuilder
-    union_class = None
-
-    def _make_union(self):
-        raise com.UnsupportedOperationError(
-            "OmniSciDB backend doesn't support Union operation"
-        )
+    union_class = OmniSciDBUnion
 
 
 class OmniSciDBQueryContext(compiles.QueryContext):

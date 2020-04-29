@@ -9,7 +9,7 @@
 | Coverage       | [![Codecov branch](https://img.shields.io/codecov/c/github/ibis-project/ibis/master.svg)](https://codecov.io/gh/ibis-project/ibis) |
 
 
-Ibis is a toolbox to bridge the gap between local Python environments, remote
+Ibis  is a toolbox to bridge the gap between local Python environments, remote
 storage, execution systems like Hadoop components (HDFS, Impala, Hive, Spark)
 and SQL databases. Its goal is to simplify analytical workflows and make you
 more productive.

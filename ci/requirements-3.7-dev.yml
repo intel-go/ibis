@@ -10,7 +10,7 @@ dependencies:
   - flake8
   - geoalchemy2
   - geopandas
-  - google-cloud-bigquery>=1.0.0
+  - google-cloud-bigquery>=1.0.0,<1.28.0
   - graphviz
   - impyla>=0.15.0
   - jinja2
